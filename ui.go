@@ -1,6 +1,8 @@
 package main
 
 import (
+	"strconv"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/navidys/tvxwidgets"
 	"github.com/rivo/tview"
@@ -9,8 +11,9 @@ import (
 type ui struct {
 	app *tview.Application
 	// bdy *tview.Flex
-	graph *tvxwidgets.BarChart
-	list  *tview.Table
+	graph  *tvxwidgets.BarChart
+	list   *tview.Table
+	idList int
 }
 
 func (u *ui) NewBarChart() {
@@ -24,6 +27,10 @@ func (u *ui) AddBarItem(name string, val int, color tcell.Color) {
 	u.graph.AddBar(name, val, color)
 }
 
+func (u *ui) SetBarValue(name string, val int) {
+	u.graph.SetBarValue(name, val)
+}
+
 func (u *ui) NewTable() {
 	u.list = tview.NewTable()
 	u.list.SetBorder(true)
@@ -31,30 +38,39 @@ func (u *ui) NewTable() {
 	u.list.SetTitle("List")
 	u.list.SetBorderPadding(1, 0, 0, 0)
 
-	u.list.SetCell(0, 0, tview.NewTableCell("1"))
-	u.list.SetCell(0, 1, tview.NewTableCell("AC"))
-	u.list.SetCell(0, 3, tview.NewTableCell(":"))
-	u.list.SetCell(0, 4, tview.NewTableCell("OFF"))
+	// u.list.SetCell(0, 0, tview.NewTableCell("1"))
+	// u.list.SetCell(0, 1, tview.NewTableCell("AC"))
+	// u.list.SetCell(0, 3, tview.NewTableCell(":"))
+	// u.list.SetCell(0, 4, tview.NewTableCell("OFF"))
 
-	u.list.SetCell(1, 0, tview.NewTableCell("2"))
-	u.list.SetCell(1, 1, tview.NewTableCell("Suhu"))
-	u.list.SetCell(1, 3, tview.NewTableCell(":"))
-	u.list.SetCell(1, 4, tview.NewTableCell("26 °C"))
+	// u.list.SetCell(1, 0, tview.NewTableCell("2"))
+	// u.list.SetCell(1, 1, tview.NewTableCell("Suhu"))
+	// u.list.SetCell(1, 3, tview.NewTableCell(":"))
+	// u.list.SetCell(1, 4, tview.NewTableCell("26 °C"))
 
-	u.list.SetCell(2, 0, tview.NewTableCell("3"))
-	u.list.SetCell(2, 1, tview.NewTableCell("Mesin"))
-	u.list.SetCell(2, 3, tview.NewTableCell(":"))
-	u.list.SetCell(2, 4, tview.NewTableCell("7000 Rpm"))
+	// u.list.SetCell(2, 0, tview.NewTableCell("3"))
+	// u.list.SetCell(2, 1, tview.NewTableCell("Mesin"))
+	// u.list.SetCell(2, 3, tview.NewTableCell(":"))
+	// u.list.SetCell(2, 4, tview.NewTableCell("7000 Rpm"))
 
-	u.list.SetCell(2, 0, tview.NewTableCell("3"))
-	u.list.SetCell(2, 1, tview.NewTableCell("Mesin"))
-	u.list.SetCell(2, 3, tview.NewTableCell(":"))
-	u.list.SetCell(2, 4, tview.NewTableCell("7000 Rpm"))
+	// u.list.SetCell(2, 0, tview.NewTableCell("3"))
+	// u.list.SetCell(2, 1, tview.NewTableCell("Mesin"))
+	// u.list.SetCell(2, 3, tview.NewTableCell(":"))
+	// u.list.SetCell(2, 4, tview.NewTableCell("7000 Rpm"))
 
-	u.list.SetCell(3, 0, tview.NewTableCell("4"))
-	u.list.SetCell(3, 1, tview.NewTableCell("Bensin"))
-	u.list.SetCell(3, 3, tview.NewTableCell(":"))
-	u.list.SetCell(3, 4, tview.NewTableCell("25 Liter"))
+	// u.list.SetCell(3, 0, tview.NewTableCell("4"))
+	// u.list.SetCell(3, 1, tview.NewTableCell("Bensin"))
+	// u.list.SetCell(3, 3, tview.NewTableCell(":"))
+	// u.list.SetCell(3, 4, tview.NewTableCell("25 Liter"))
+}
+
+func (u *ui) AddTableItem(name, val, satuan string) {
+	u.list.SetCell(u.idList, 0, tview.NewTableCell(strconv.Itoa(u.idList+1)))
+	u.list.SetCell(u.idList, 1, tview.NewTableCell(name))
+	u.list.SetCell(u.idList, 3, tview.NewTableCell(":"))
+	u.list.SetCell(u.idList, 4, tview.NewTableCell(val))
+	u.list.SetCell(u.idList, 5, tview.NewTableCell(satuan))
+	u.idList++
 }
 
 func (u *ui) SetValTable(row int, val string) {

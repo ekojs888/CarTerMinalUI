@@ -23,9 +23,10 @@ type ConnectionDB struct {
 
 type TblData struct {
 	gorm.Model
-	Name   string
-	Value  float64
-	Satuan string
+	Name     string
+	Value    float64
+	ValueMax float64
+	Satuan   string
 }
 
 func (d *Databases) Begin(dbname string) *Databases {
@@ -77,6 +78,10 @@ func (d *Databases) Init() {
 }
 
 func (d *Databases) Insert(data *TblData) {
+	d.DB.Create(data)
+}
+
+func (d *Databases) Inserts(data *[]TblData) {
 	d.DB.Create(data)
 }
 
