@@ -81,6 +81,13 @@ func (d *Databases) Insert(data *TblData) {
 	d.DB.Create(data)
 }
 
+func (d *Databases) UpdateByName(name string, value float64) {
+	var dt TblData
+	d.DB.Where("name=?", name).Find(&dt)
+	dt.Value = value
+	d.DB.Save(&dt)
+}
+
 func (d *Databases) Inserts(data *[]TblData) {
 	d.DB.Create(data)
 }

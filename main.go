@@ -2,6 +2,7 @@ package main
 
 import (
 	"strconv"
+	"time"
 
 	"github.com/gdamore/tcell/v2"
 )
@@ -11,9 +12,6 @@ func main() {
 	ui := ui{}
 	ui.NewBarChart()
 	ui.NewTable()
-
-	// var idTbl = map[string]int{}
-	// idTbl["Bensin"] = 3
 
 	db.ConSqlLite()
 	// db.Init()
@@ -40,13 +38,32 @@ func main() {
 	// 	},
 	// )
 	// db.Init()
+	db.UpdateByName("Bensin", 15)
+
+	go func() {
+		var a float64 = 0
+		for {
+			time.Sleep(100 * time.Millisecond)
+			db.UpdateByName("Bensin", a)
+			if a >= 40 {
+				a = 0
+			} else {
+				a++
+			}
+
+			dt := db.List()
+			for _, val := range dt {
+				ui.SetBarValue(val.Name, int((val.Value/val.ValueMax)*100))
+				ui.SetValTable(int(val.ID)-1, strconv.Itoa(int(val.Value)))
+			}
+			ui.app.Draw()
+		}
+	}()
+
 	dt := db.List()
 	for _, val := range dt {
 		ui.AddBarItem(val.Name, int((val.Value/val.ValueMax)*100), tcell.ColorGreen)
 		ui.AddTableItem(val.Name, strconv.Itoa(int(val.Value)), val.Satuan)
-		// ui.SetValTable(idTbl[val.Name], strconv.Itoa(int(val.Value)))
-		// fmt.Println(idTbl[val.Name])
-		// fmt.Println(val.Name)
 	}
 
 	ui.NewApp()
