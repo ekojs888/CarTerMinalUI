@@ -1,6 +1,10 @@
 package main
 
 import (
+	"io/fs"
+	"io/ioutil"
+	"log"
+	"os/exec"
 	"strconv"
 
 	"github.com/gdamore/tcell/v2"
@@ -11,9 +15,11 @@ import (
 type ui struct {
 	app *tview.Application
 	// bdy *tview.Flex
-	graph  *tvxwidgets.BarChart
-	list   *tview.Table
-	idList int
+	graph       *tvxwidgets.BarChart
+	list        *tview.Table
+	listMusic   *tview.List
+	idList      int
+	idListMusic int
 }
 
 func (u *ui) NewBarChart() {
@@ -29,6 +35,80 @@ func (u *ui) AddBarItem(name string, val int, color tcell.Color) {
 
 func (u *ui) SetBarValue(name string, val int) {
 	u.graph.SetBarValue(name, val)
+}
+
+func (u *ui) NewListMusic() {
+	u.listMusic = tview.NewList()
+	u.listMusic.ShowSecondaryText(false)
+	u.listMusic.SetBorder(true)
+	u.listMusic.SetTitle("Music")
+	u.listMusic.SetBorderPadding(0, 0, 0, 0)
+
+	// u.listMusic.AddItem("List item 1", "", '1', nil)
+	// u.listMusic.AddItem("List item 2", "", '2', nil)
+	// 		AddItem("List item 3", "Some explanatory text", 'c', nil).
+	// 		AddItem("List item 4", "Some explanatory text", 'd', nil).
+	// 		AddItem("Quit", "Press to exit", 'q', func() {
+	// 			app.Stop()
+	// 		})
+}
+
+func (u *ui) ReadDir(path string) []fs.FileInfo {
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return files
+}
+
+func (u *ui) AddItemMusicDir(value, dir string) {
+	if value == ".." {
+		u.listMusic.AddItem(value, dir, 0, func() {
+			files := u.ReadDir(dir)
+			u.listMusic.Clear()
+			u.idListMusic = 0
+			for _, file := range files {
+				if file.Name()[0:1] == "." {
+					continue
+				}
+				if file.IsDir() {
+					u.AddItemMusicDir(file.Name(), dir)
+				} else {
+					u.AddItemMusic(file.Name(), dir)
+				}
+			}
+		})
+	} else {
+		u.idListMusic += 1
+		u.listMusic.AddItem(strconv.Itoa(u.idListMusic)+". "+value, dir+"/"+value, 0, func() {
+			path := dir + "/" + value
+			files := u.ReadDir(path)
+			u.listMusic.Clear()
+			u.idListMusic = 0
+			u.AddItemMusicDir("..", dir)
+			for _, file := range files {
+				if file.Name()[0:1] == "." {
+					continue
+				}
+				if file.IsDir() {
+					u.AddItemMusicDir(file.Name(), path)
+				} else {
+					u.AddItemMusic(file.Name(), path)
+				}
+			}
+		})
+	}
+}
+func (u *ui) AddItemMusic(value string, path string) {
+	u.idListMusic += 1
+	u.listMusic.AddItem(strconv.Itoa(u.idListMusic)+". "+value, path+"/"+value, 0, func() {
+		ci := u.listMusic.GetCurrentItem()
+		_, txt := u.listMusic.GetItemText(ci)
+		// fmt.Println(txt)
+		cmd := exec.Command("/usr/bin/mocp", "-l", txt)
+		cmd.Run()
+	})
 }
 
 func (u *ui) NewTable() {
@@ -114,17 +194,18 @@ func (u *ui) NewApp() {
 			SetDirection(tview.FlexRow).
 			AddItem(u.graph, 0, 1, false),
 		// AddItem(gauge1, 4, 1, false),
-		0, 2, false)
+		0, 1, false)
 	flex.AddItem(
 		tview.NewFlex().
-			// SetDirection(tview.FlexRow).
+			SetDirection(tview.FlexRow).
 			// AddItem(gauge, 3, 1, false).
 			// AddItem(gauge1, 3, 1, false).
-			AddItem(u.list, 0, 1, true),
+			AddItem(u.list, 0, 1, false).
+			AddItem(u.listMusic, 0, 1, true),
 		0, 1, false)
 	flex.GetItem(0).Blur()
 	u.app.SetRoot(flex, true)
-	// u.app.SetFocus(list)
+	u.app.SetFocus(u.listMusic)
 }
 
 func (u *ui) Run() {
