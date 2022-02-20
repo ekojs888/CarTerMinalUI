@@ -15,7 +15,7 @@ var curDir string = ""
 
 func readFlasdisk(ui ui) {
 
-	dirf := "/home/eko/Downloads/fdiskcek/dirfolder.txt"
+	dirf := "/opt/fdiskcek/dirfolder.txt"
 	dirr, err := os.Open(dirf)
 	if err != nil {
 		log.Fatal(err)
