@@ -55,7 +55,7 @@ func (d *Databases) Begin(dbname string) *Databases {
 
 func (d *Databases) ConSqlLite() *Databases {
 	// github.com/mattn/go-sqlite3
-	d.DB, d.err = gorm.Open(sqlite.Open("car.db"), &gorm.Config{})
+	d.DB, d.err = gorm.Open(sqlite.Open("/tmp/car.db"), &gorm.Config{})
 	return d
 }
 

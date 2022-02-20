@@ -64,29 +64,29 @@ func main() {
 	ui.NewListMusic()
 
 	db.ConSqlLite()
-	// db.Init()
-	// db.Inserts(
-	// 	&[]TblData{
-	// 		{
-	// 			Name:     "Bensin",
-	// 			Value:    20,
-	// 			ValueMax: 40,
-	// 			Satuan:   "Liter",
-	// 		},
-	// 		{
-	// 			Name:     "Mesin",
-	// 			Value:    7000,
-	// 			ValueMax: 10000,
-	// 			Satuan:   "Rpm",
-	// 		},
-	// 		{
-	// 			Name:     "Aki",
-	// 			Value:    12,
-	// 			ValueMax: 13,
-	// 			Satuan:   "Volt",
-	// 		},
-	// 	},
-	// )
+	db.Init()
+	db.Inserts(
+		&[]TblData{
+			{
+				Name:     "Bensin",
+				Value:    20,
+				ValueMax: 40,
+				Satuan:   "Liter",
+			},
+			{
+				Name:     "Mesin",
+				Value:    7000,
+				ValueMax: 10000,
+				Satuan:   "Rpm",
+			},
+			{
+				Name:     "Aki",
+				Value:    12,
+				ValueMax: 13,
+				Satuan:   "Volt",
+			},
+		},
+	)
 	// db.Init()
 	db.UpdateByName("Bensin", 15)
 
