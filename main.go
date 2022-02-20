@@ -11,12 +11,9 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-func main() {
-	db := Databases{}
-	ui := ui{}
-	ui.NewBarChart()
-	ui.NewTable()
-	ui.NewListMusic()
+var curDir string = ""
+
+func readFlasdisk(ui ui) {
 
 	dirf := "/home/eko/Downloads/fdiskcek/dirfolder.txt"
 	dirr, err := os.Open(dirf)
@@ -32,22 +29,39 @@ func main() {
 	dirr.Close()
 
 	dir := fileLines[0]
-	files, err := ioutil.ReadDir(dir)
-	if err != nil {
-		log.Fatal(err)
+
+	if dir == "" {
+		ui.listMusic.Clear()
+		curDir = ""
 	}
 
-	ui.Music.Start()
-
-	for _, file := range files {
-		if file.IsDir() {
-			if file.Name()[0:1] != "." {
-				ui.AddItemMusicDir(file.Name(), dir)
-			}
-		} else {
-			ui.AddItemMusic(file.Name(), dir)
+	if dir != "" && curDir != dir {
+		files, err := ioutil.ReadDir(dir)
+		if err != nil {
+			log.Fatal(err)
 		}
+
+		ui.Music.Start()
+
+		for _, file := range files {
+			if file.IsDir() {
+				if file.Name()[0:1] != "." {
+					ui.AddItemMusicDir(file.Name(), dir)
+				}
+			} else {
+				ui.AddItemMusic(file.Name(), dir)
+			}
+		}
+		curDir = dir
 	}
+}
+
+func main() {
+	db := Databases{}
+	ui := ui{}
+	ui.NewBarChart()
+	ui.NewTable()
+	ui.NewListMusic()
 
 	db.ConSqlLite()
 	// db.Init()
@@ -94,6 +108,9 @@ func main() {
 				ui.SetBarValue(val.Name, int((val.Value/val.ValueMax)*100))
 				ui.SetValTable(int(val.ID)-1, strconv.Itoa(int(val.Value)))
 			}
+
+			readFlasdisk(ui)
+
 			ui.app.Draw()
 
 		}
