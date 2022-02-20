@@ -6,6 +6,7 @@ import (
 	"log"
 	"os/exec"
 	"strconv"
+	"strings"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/navidys/tvxwidgets"
@@ -20,6 +21,47 @@ type ui struct {
 	listMusic   *tview.List
 	idList      int
 	idListMusic int
+	Music       *mocp
+}
+
+type mocp struct {
+}
+
+func (u *mocp) Start() {
+	u.run("-S")
+}
+
+func (u *mocp) PlaylistAdd(path string) {
+	u.run("-a", path)
+}
+
+func (u *mocp) PlaylistClear() {
+	u.run("--clear")
+}
+
+func (u *mocp) PlayFirst() {
+	u.run("--play")
+}
+
+func (u *mocp) GetCurentPlay() (filename string) {
+	byt := u.run("-i")
+	dt := strings.Split(string(byt), "\n")
+	dt = strings.Split(dt[1], " ")
+	return dt[1]
+}
+
+func (u *mocp) TogglePause() {
+	u.run("--toggle-pause")
+}
+
+func (u *mocp) RunServer() {
+	u.run("--server")
+}
+
+func (u *mocp) run(c ...string) (out []byte) {
+	// fmt.Println(c)
+	out, _ = exec.Command("/usr/bin/mocp", c...).Output()
+	return out
 }
 
 func (u *ui) NewBarChart() {
@@ -78,11 +120,19 @@ func (u *ui) AddItemMusicDir(value, dir string) {
 					u.AddItemMusic(file.Name(), dir)
 				}
 			}
+
 		})
 	} else {
 		u.idListMusic += 1
 		u.listMusic.AddItem(strconv.Itoa(u.idListMusic)+". "+value, dir+"/"+value, 0, func() {
-			path := dir + "/" + value
+			// path := dir + "/" + value
+			ci := u.listMusic.GetCurrentItem()
+			_, path := u.listMusic.GetItemText(ci)
+
+			u.Music.PlaylistClear()
+			u.Music.PlaylistAdd(path)
+			// u.Music.PlayFirst()
+
 			files := u.ReadDir(path)
 			u.listMusic.Clear()
 			u.idListMusic = 0
@@ -97,17 +147,24 @@ func (u *ui) AddItemMusicDir(value, dir string) {
 					u.AddItemMusic(file.Name(), path)
 				}
 			}
+
 		})
 	}
+	// path := dir + "/" + value
+	// file, _ := os.Open(path)
+	// defer file.Close()
+	// fileInfo, _ := file.Stat()
+	// if fileInfo.IsDir() {
+	// 	u.Music.PlaylistClear()
+	// 	u.Music.PlaylistAdd(path)
+	// }
 }
 func (u *ui) AddItemMusic(value string, path string) {
 	u.idListMusic += 1
 	u.listMusic.AddItem(strconv.Itoa(u.idListMusic)+". "+value, path+"/"+value, 0, func() {
 		ci := u.listMusic.GetCurrentItem()
 		_, txt := u.listMusic.GetItemText(ci)
-		// fmt.Println(txt)
-		cmd := exec.Command("/usr/bin/mocp", "-l", txt)
-		cmd.Run()
+		u.Music.run("-l", txt)
 	})
 }
 

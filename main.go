@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"io/ioutil"
 	"log"
+	"os"
 	"strconv"
 	"time"
 
@@ -16,11 +18,26 @@ func main() {
 	ui.NewTable()
 	ui.NewListMusic()
 
-	dir := "/media/eko/TOSHIBA"
+	dirf := "/home/eko/Downloads/fdiskcek/dirfolder.txt"
+	dirr, err := os.Open(dirf)
+	if err != nil {
+		log.Fatal(err)
+	}
+	filescanner := bufio.NewScanner(dirr)
+	filescanner.Split(bufio.ScanLines)
+	var fileLines []string
+	for filescanner.Scan() {
+		fileLines = append(fileLines, filescanner.Text())
+	}
+	dirr.Close()
+
+	dir := fileLines[0]
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	ui.Music.Start()
 
 	for _, file := range files {
 		if file.IsDir() {
