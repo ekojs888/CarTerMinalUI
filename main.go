@@ -2,8 +2,8 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"io/ioutil"
-	"log"
 	"os"
 	"strconv"
 	"time"
@@ -12,13 +12,14 @@ import (
 )
 
 var curDir string = ""
+var pathd string
 
-func readFlasdisk(ui ui) {
+func readFlasdisk(ui ui, pathdirf string) {
 
-	dirf := "/opt/fdiskcek/dirfolder.txt"
-	dirr, err := os.Open(dirf)
+	// dirf := "/opt/fdiskcek/dirfolder.txt"
+	dirr, err := os.Open(pathdirf)
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
 	filescanner := bufio.NewScanner(dirr)
 	filescanner.Split(bufio.ScanLines)
@@ -38,7 +39,7 @@ func readFlasdisk(ui ui) {
 	if dir != "" && curDir != dir {
 		files, err := ioutil.ReadDir(dir)
 		if err != nil {
-			log.Fatal(err)
+			return
 		}
 
 		ui.Music.Start()
@@ -57,8 +58,12 @@ func readFlasdisk(ui ui) {
 }
 
 func main() {
+	flag.StringVar(&pathd, "pathd", "/opt/fdiskcek/dirfolder.txt", "path dirfolder")
+	flag.Parse()
+
 	// db := Databases{}
 	ui := ui{}
+	ui.Music.Start()
 	ui.NewBarChart()
 	ui.NewTable()
 	ui.NewListMusic()
@@ -115,7 +120,7 @@ func main() {
 			ui.SetBarValue("Suhu", int(a))
 			ui.SetValTable(1, strconv.Itoa(int((a/40)*100)))
 
-			readFlasdisk(ui)
+			readFlasdisk(ui, pathd)
 
 			ui.app.Draw()
 
