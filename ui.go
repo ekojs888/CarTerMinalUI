@@ -31,6 +31,10 @@ func (u *mocp) Start() {
 	u.run("-S")
 }
 
+func (u *mocp) Stop() {
+	u.run("-s")
+}
+
 func (u *mocp) PlaylistAdd(path string) {
 	u.run("-a", path)
 }
@@ -85,6 +89,7 @@ func (u *ui) NewListMusic() {
 	u.listMusic.SetBorder(true)
 	u.listMusic.SetTitle("Music")
 	u.listMusic.SetBorderPadding(0, 0, 0, 0)
+	u.listMusic.SetSelectedBackgroundColor(tcell.ColorSpringGreen)
 
 	// u.listMusic.AddItem("List item 1", "", '1', nil)
 	// u.listMusic.AddItem("List item 2", "", '2', nil)
@@ -244,13 +249,40 @@ func (u *ui) NewApp() {
 	gauge1.SetCritPercentage(80)
 	gauge1.SetBorder(true)
 
+	pages := tview.NewPages()
+
+	btn1 := tview.NewButton("Next")
+	btn1.SetBorder(false)
+	btn1.SetSelectedFunc(func() {
+		// pages.SwitchToPage("kedua")
+		u.Music.run("--next")
+	})
+
+	dialog := tvxwidgets.NewMessageDialog(tvxwidgets.ErrorDailog)
+	dialog.SetTitle("error dialog")
+	dialog.SetMessage("This is first line of error\nThis is second line of the error message")
+	dialog.SetDoneFunc(func() {
+		u.app.SetRoot(pages, true)
+	})
+
+	btn2 := tview.NewButton("Play")
+	btn2.SetBorder(false)
+	btn2.SetSelectedFunc(func() {
+		u.app.SetRoot(dialog, true)
+	})
+
 	u.app = tview.NewApplication()
 	flex := tview.NewFlex()
 	flex.AddItem(
 		tview.NewFlex().
 			SetDirection(tview.FlexRow).
-			AddItem(u.graph, 0, 1, false),
-		// AddItem(gauge1, 4, 1, false),
+			AddItem(u.graph, 0, 1, false).
+			// AddItem(gauge1, 4, 1, false),
+			AddItem(tview.NewFlex().
+				SetDirection(tview.FlexColumn).
+				AddItem(btn1, 10, 0, true).
+				AddItem(btn2, 10, 0, true),
+				1, 0, false),
 		0, 1, false)
 	flex.AddItem(
 		tview.NewFlex().
@@ -261,8 +293,19 @@ func (u *ui) NewApp() {
 			AddItem(u.listMusic, 0, 1, true),
 		0, 1, false)
 	flex.GetItem(0).Blur()
-	u.app.SetRoot(flex, true)
-	u.app.SetFocus(u.listMusic)
+
+	pages.AddPage("utama", flex, true, true)
+
+	// dialog := tvxwidgets.NewMessageDialog(tvxwidgets.ErrorDailog)
+	// dialog.SetTitle("error dialog")
+	// dialog.SetMessage("This is first line of error\nThis is second line of the error message")
+	// dialog.SetDoneFunc(func() {
+	// 	u.app.Stop()
+	// })
+
+	pages.AddPage("kedua", dialog, true, false)
+	u.app.EnableMouse(true)
+	u.app.SetRoot(pages, true)
 }
 
 func (u *ui) Run() {

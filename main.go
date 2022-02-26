@@ -14,7 +14,7 @@ import (
 var curDir string = ""
 var pathd string
 
-func readFlasdisk(ui ui, pathdirf string) {
+func readFlasdisk(ui *ui, pathdirf string) {
 
 	// dirf := "/opt/fdiskcek/dirfolder.txt"
 	dirr, err := os.Open(pathdirf)
@@ -33,6 +33,7 @@ func readFlasdisk(ui ui, pathdirf string) {
 
 	if dir == "" {
 		ui.listMusic.Clear()
+		ui.Music.Stop()
 		curDir = ""
 	}
 
@@ -41,7 +42,7 @@ func readFlasdisk(ui ui, pathdirf string) {
 		if err != nil {
 			return
 		}
-
+		ui.idListMusic = 0
 		ui.Music.Start()
 
 		for _, file := range files {
@@ -96,6 +97,14 @@ func main() {
 	// db.UpdateByName("Bensin", 15)
 
 	go func() {
+		for {
+			time.Sleep(100 * time.Millisecond)
+			readFlasdisk(&ui, pathd)
+
+			ui.app.Draw()
+		}
+	}()
+	go func() {
 		var a float64 = 0
 		for {
 			time.Sleep(500 * time.Millisecond)
@@ -119,8 +128,6 @@ func main() {
 
 			ui.SetBarValue("Suhu", int(a))
 			ui.SetValTable(1, strconv.Itoa(int((a/40)*100)))
-
-			readFlasdisk(ui, pathd)
 
 			ui.app.Draw()
 
